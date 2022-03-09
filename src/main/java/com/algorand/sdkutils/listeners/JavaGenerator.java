@@ -459,7 +459,9 @@ final class JavaQueryWriter {
         this.generatedPathsEntryBody = new StringBuilder();
         this.httpMethod = query.method;
 
-        this.requestMethod.append(getQueryResponseMethod(query.returnType));
+        for (String rm : query.returnType) {
+            this.requestMethod.append(getQueryResponseMethod(rm));
+        }
         this.requestMethod.append("    protected QueryData getRequestString() {\n");
         this.pAdded = false;
         this.addFormatMsgpack = false;
@@ -475,8 +477,10 @@ final class JavaQueryWriter {
         Tools.addImport(this.imports, "com.algorand.algosdk.v2.client.common.Query");
         Tools.addImport(this.imports, "com.algorand.algosdk.v2.client.common.QueryData");
         Tools.addImport(this.imports, "com.algorand.algosdk.v2.client.common.Response");
-        if (needsClassImport(query.returnType.toLowerCase())) {
-            Tools.addImport(this.imports, this.javaGen.modelPackage + "." + query.returnType);
+        for (String rt : query.returnType) {
+            if (needsClassImport(rt.toLowerCase())) {
+                Tools.addImport(this.imports, this.javaGen.modelPackage + "." + query.returnType);
+            }
         }
 
         this.javaGen.generatedPathsEntries.append(Tools.formatComment(this.discAndPath, JavaQueryWriter.TAB, true));

@@ -507,7 +507,9 @@ public class OpenApiParser {
                 }
             }
         }
-        this.publisher.publish(Events.NEW_QUERY, new QueryDef(methodName, returnType, path, desc, httpMethod, contentTypes));
+        ArrayList<String> returnTypes = new ArrayList<String>();
+        returnTypes.add(returnType);
+        this.publisher.publish(Events.NEW_QUERY, new QueryDef(methodName, returnTypes, path, desc, httpMethod, contentTypes));
 
         processQueryParams(properties);
 

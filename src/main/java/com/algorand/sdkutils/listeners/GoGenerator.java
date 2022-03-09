@@ -47,7 +47,7 @@ public class GoGenerator implements Subscriber {
     private StringBuilder queryFunctions;
 
     private String currentQueryName;
-    private String currentQueryReturn;
+    private List<String> currentQueryReturn;
 
     // imports that go to one query file written by queryWriter
     private Map<String, Set<String>> imports;
@@ -294,7 +294,10 @@ public class GoGenerator implements Subscriber {
         this.path = query.path;
         this.httpMethod = query.method;
         this.currentQueryName = Tools.getCamelCase(query.name, true);
-        this.currentQueryReturn = Tools.getCamelCase(query.returnType, true);
+        this.currentQueryReturn = new ArrayList<String>();
+        for (String rt : query.returnType) {
+            this.currentQueryReturn.add(Tools.getCamelCase(rt, true));
+        }
 
         this.pathParameters = new TreeMap<String, String>();
         this.bodyParameter = new TreeMap<String, TypeConverter>();

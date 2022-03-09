@@ -48,7 +48,7 @@ public class ResponseGenerator implements Subscriber {
     @com.beust.jcommander.Parameters(commandDescription = "Generate response test file(s).")
     public static class ResponseGeneratorArgs extends Main.CommonArgs {
         @com.beust.jcommander.Parameter(names = {"-f", "--filter"}, description = "Only generate response files for objects which contain the given value as a substring.")
-        public String filter;
+        public List<String> filter;
 
         @com.beust.jcommander.Parameter(names = {"-l", "--list"}, description = "List types which could be generated instead of generating them.")
         boolean list;
@@ -314,7 +314,9 @@ public class ResponseGenerator implements Subscriber {
             return ImmutableList.of(makeSignedTransactionNode());
         }
 
-        List<Map.Entry<StructDef, List<TypeDef>>> matches = findEntry(prop.rawTypeName, true);
+        ArrayList<String> rawTypeName = new ArrayList<String>();
+        rawTypeName.add(prop.rawTypeName); 
+        List<Map.Entry<StructDef, List<TypeDef>>> matches = findEntry(rawTypeName, true);
 
         if (matches.size() == 0) {
             throw new RuntimeException("Unable to find reference: " + prop.rawTypeName);
@@ -346,7 +348,9 @@ public class ResponseGenerator implements Subscriber {
 
                     if (StringUtils.isNotEmpty(aliasOf)) {
                         // Lookup the real object to generate the response file.
-                        List<Map.Entry<StructDef, List<TypeDef>>> entries = findEntry(aliasOf, true);
+                        ArrayList<String> aliasOfList = new ArrayList<String>();
+                        aliasOfList.add(aliasOf);
+                        List<Map.Entry<StructDef, List<TypeDef>>> entries = findEntry(aliasOfList, true);
                         if (entries.size() != 1) {
                             logger.error(
                                 "Failed to find single alias for \"" + aliasOf + "\".");
@@ -372,7 +376,7 @@ public class ResponseGenerator implements Subscriber {
                         }
                     }
                 });
-       
+        /*
         findEntry(args.filter, false)
                 .forEach(entry -> {
                     // list mode
@@ -392,6 +396,7 @@ public class ResponseGenerator implements Subscriber {
                         }
                     }
                 });
+         */
     }
 
     /**
@@ -400,16 +405,26 @@ public class ResponseGenerator implements Subscriber {
      * @param strict when in strict mode the name must be an exact case sensitive match.
      * @return
      */
-    private List<Map.Entry<StructDef, List<TypeDef>>> findEntry(String name, boolean strict) {
+    private List<Map.Entry<StructDef, List<TypeDef>>> findEntry(List<String> name, boolean strict) {
         return Stream.of(responses, models)
                 .map(Map::entrySet)
                 .flatMap(Collection::stream)
                 .filter(entry -> {
-                    if (StringUtils.isNotEmpty(name)) {
+                    if (!name.isEmpty()) {
                         if (strict) {
-                            return entry.getKey().name.equals(name);
+                            for (String rt : name) {
+                                if (entry.getKey().name.equals(rt)) {
+                                    return true;
+                                }
+                            }
+                            return false;
                         } else {
-                            return entry.getKey().name.contains(name);
+                            for (String rt : name) {
+                                if (entry.getKey().name.contains(rt)) {
+                                    return true;
+                                }
+                            }
+                            return false;
                         }
                     }
                     return true;
@@ -417,15 +432,25 @@ public class ResponseGenerator implements Subscriber {
                 .collect(Collectors.toList());
     }
 
-    private List<ExportType> filterQueries(String name, boolean strict) {
+    private List<ExportType> filterQueries(List<String> name, boolean strict) {
         return queries.stream()
                 .filter(q -> {
-                    if (StringUtils.isNotEmpty(name)) {
+                    if (!name.isEmpty()) {
+                        
+                        for (String nameElt : name) {
+                        
                         if (strict) {
-                            return q.returnType.equals(name);
+                            for (String rt : q.returnType)
+                                if (rt.equals(nameElt))
+                                    return true;
                         } else {
-                            return q.returnType.contains(name);
+                            for (String rt : q.getReturnType())
+                                if (rt.contains(nameElt))
+                                    return true;
                         }
+                        
+                        }
+                        return false;
                     }
                     // no filter.
                     return true;

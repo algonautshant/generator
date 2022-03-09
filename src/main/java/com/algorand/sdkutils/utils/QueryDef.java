@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public class QueryDef {
     final public String name;
-    final public String returnType;
+    final public List<String> returnType;
     //final public String returnTypeModel;
     final public String path;
     final public String description;
@@ -19,7 +19,7 @@ public class QueryDef {
     final public List<TypeDef> pathParameters = new ArrayList<>();
     final public List<TypeDef> bodyParameters = new ArrayList<>();
 
-    public QueryDef(String name, String returnType, String path, String description, String method, List<String> contentType) {
+    public QueryDef(String name, List<String> returnType, String path, String description, String method, List<String> contentType) {
         this.name = name;
         this.returnType = returnType;
         this.path = path;
@@ -65,8 +65,10 @@ public class QueryDef {
                 types.add("enum");
             }
         }
-        if (this.returnType != "String") {
-            types.add(this.returnType);
+        for (String rt : this.returnType) {
+            if (rt != "String") {
+            types.add(rt);
+            }
         }
         return types;
     }
@@ -75,7 +77,7 @@ public class QueryDef {
         return name;
     }
 
-    public String getReturnType() {
+    public List<String> getReturnType() {
         return returnType;
     }
 
